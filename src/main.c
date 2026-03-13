@@ -6,7 +6,42 @@
 
 #define MAX_INPUT 1024
 
-int main(void) {
+/* -e モード: 2つ目以降の引数を式として評価して結果を表示 */
+static int run_eval_mode(int argc, char *argv[]) {
+    if (argc < 3) {
+        fprintf(stderr, "使用法: calc -e <式>\n");
+        return 1;
+    }
+
+    char expr[MAX_INPUT];
+    int pos = 0;
+    for (int i = 2; i < argc; i++) {
+        if (i > 2 && pos < MAX_INPUT - 1)
+            expr[pos++] = ' ';
+        const char *s = argv[i];
+        while (*s && pos < MAX_INPUT - 1)
+            expr[pos++] = *s++;
+    }
+    expr[pos] = '\0';
+
+    char  errmsg[256];
+    Value result = calc_eval(expr, val_int(0), errmsg, sizeof(errmsg));
+    if (errmsg[0]) {
+        fprintf(stderr, "エラー: %s\n", errmsg);
+        return 1;
+    }
+    print_result(result);
+    printf("\n");
+    return 0;
+}
+
+int main(int argc, char *argv[]) {
+    if (argc > 1) {
+        if (strcmp(argv[1], "-e") == 0)
+            return run_eval_mode(argc, argv);
+        fprintf(stderr, "不明なオプション: %s\n使用法: calc -e <式>\n", argv[1]);
+        return 1;
+    }
     char  input[MAX_INPUT];
     char  errmsg[256];
     Value prev = val_int(0);
