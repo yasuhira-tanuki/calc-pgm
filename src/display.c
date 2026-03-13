@@ -113,6 +113,8 @@ void print_help(void) {
     printf("  単位間変換\n");
     printf("    conv(n, 変換前, 変換後)  例: conv(2,gib,mb) conv(500,ms,us)\n");
     printf("    基準単位: b(バイト) hz(Hz) sec(秒)\n\n");
+    printf("【コマンドライン引数】\n");
+    printf("  -e <式>     式を演算して計算結果を表示\n\n");
     printf("【コマンド】\n");
     printf("  help        このヘルプを表示\n");
     printf("  types       整数型の一覧を表示 (サイズ・値の範囲)\n");
