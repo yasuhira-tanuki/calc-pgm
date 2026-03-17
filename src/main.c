@@ -6,10 +6,10 @@
 
 #define MAX_INPUT 1024
 
-/* -e モード: 2つ目以降の引数を式として評価して結果を表示 */
-static int run_eval_mode(int argc, char *argv[]) {
+/* 2つ目以降の引数を式として結合して評価し結果を表示する共通処理 */
+static int run_expr_from_args(int argc, char *argv[], const char *usage) {
     if (argc < 3) {
-        fprintf(stderr, "使用法: calc -e <式>\n");
+        fprintf(stderr, "%s\n", usage);
         return 1;
     }
 
@@ -35,11 +35,23 @@ static int run_eval_mode(int argc, char *argv[]) {
     return 0;
 }
 
+/* -e モード: 式を評価して結果を表示 */
+static int run_eval_mode(int argc, char *argv[]) {
+    return run_expr_from_args(argc, argv, "使用法: calc -e <式>");
+}
+
+/* -b モード: ビット演算式を評価して結果を表示 */
+static int run_bitwise_mode(int argc, char *argv[]) {
+    return run_expr_from_args(argc, argv, "使用法: calc -b <式>");
+}
+
 int main(int argc, char *argv[]) {
     if (argc > 1) {
         if (strcmp(argv[1], "-e") == 0)
             return run_eval_mode(argc, argv);
-        fprintf(stderr, "不明なオプション: %s\n使用法: calc -e <式>\n", argv[1]);
+        if (strcmp(argv[1], "-b") == 0)
+            return run_bitwise_mode(argc, argv);
+        fprintf(stderr, "不明なオプション: %s\n使用法: calc -e <式> / calc -b <式>\n", argv[1]);
         return 1;
     }
     char  input[MAX_INPUT];
