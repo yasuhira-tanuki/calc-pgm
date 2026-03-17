@@ -1,6 +1,7 @@
 #include "display.h"
 
 #include <float.h>
+#include <math.h>
 #include <iconv.h>
 #include <limits.h>
 #include <stdio.h>
@@ -115,7 +116,8 @@ void print_help(void) {
     printf("    基準単位: b(バイト) hz(Hz) sec(秒)\n\n");
     printf("【コマンドライン引数】\n");
     printf("  -e <式>     式を演算して計算結果を表示\n");
-    printf("  -b <式>     ビット演算式を評価して結果を表示\n\n");
+    printf("  -b <式>     ビット演算式を評価して結果を表示\n");
+    printf("  -l <式>     式を評価し ln / log2 / log10 を一括表示\n\n");
     printf("【コマンド】\n");
     printf("  help        このヘルプを表示\n");
     printf("  types       整数型の一覧を表示 (サイズ・値の範囲)\n");
@@ -245,6 +247,27 @@ void print_size(const char *str) {
         else       printf("  %-10s : %d byte\n", tbl[i].label, n);
     }
     printf("\n");
+}
+
+/* 浮動小数点値を末尾ゼロ除去して表示するヘルパー */
+static void print_double(double v) {
+    char buf[64];
+    snprintf(buf, sizeof(buf), "%.10f", v);
+    char *dot = strchr(buf, '.');
+    if (dot) {
+        char *end = dot;
+        while (*end) end++;
+        end--;
+        while (end > dot && *end == '0') *end-- = '\0';
+        if (end == dot) *end = '\0';
+    }
+    printf("%s", buf);
+}
+
+void print_log_result(double x) {
+    printf("  ln   : "); print_double(log(x));   printf("\n");
+    printf("  log2 : "); print_double(log2(x));  printf("\n");
+    printf("  log10: "); print_double(log10(x)); printf("\n");
 }
 
 void print_encodings(void) {

@@ -45,13 +45,49 @@ static int run_bitwise_mode(int argc, char *argv[]) {
     return run_expr_from_args(argc, argv, "使用法: calc -b <式>");
 }
 
+/* -l モード: 式を評価し ln / log2 / log10 を一括表示 */
+static int run_log_mode(int argc, char *argv[]) {
+    if (argc < 3) {
+        fprintf(stderr, "使用法: calc -l <式>\n");
+        return 1;
+    }
+
+    char expr[MAX_INPUT];
+    int pos = 0;
+    for (int i = 2; i < argc; i++) {
+        if (i > 2 && pos < MAX_INPUT - 1)
+            expr[pos++] = ' ';
+        const char *s = argv[i];
+        while (*s && pos < MAX_INPUT - 1)
+            expr[pos++] = *s++;
+    }
+    expr[pos] = '\0';
+
+    char  errmsg[256];
+    Value result = calc_eval(expr, val_int(0), errmsg, sizeof(errmsg));
+    if (errmsg[0]) {
+        fprintf(stderr, "エラー: %s\n", errmsg);
+        return 1;
+    }
+    double x = result.is_float ? result.dval : (double)result.ival;
+    if (x <= 0.0) {
+        fprintf(stderr, "エラー: 対数の引数は正の数が必要\n");
+        return 1;
+    }
+    print_log_result(x);
+    printf("\n");
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
     if (argc > 1) {
         if (strcmp(argv[1], "-e") == 0)
             return run_eval_mode(argc, argv);
         if (strcmp(argv[1], "-b") == 0)
             return run_bitwise_mode(argc, argv);
-        fprintf(stderr, "不明なオプション: %s\n使用法: calc -e <式> / calc -b <式>\n", argv[1]);
+        if (strcmp(argv[1], "-l") == 0)
+            return run_log_mode(argc, argv);
+        fprintf(stderr, "不明なオプション: %s\n使用法: calc -e <式> / calc -b <式> / calc -l <式>\n", argv[1]);
         return 1;
     }
     char  input[MAX_INPUT];
