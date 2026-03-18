@@ -91,6 +91,34 @@ static int run_format_mode(int argc, char *argv[]) {
     return 0;
 }
 
+/* -c モード: 単位変換 conv(<値>, <変換前>, <変換後>) */
+static int run_conv_mode(int argc, char *argv[]) {
+    if (argc < 5) {
+        fprintf(stderr, "使用法: calc -c <値> <変換前単位> <変換後単位>\n");
+        fprintf(stderr, "  例: calc -c 2 gib mb\n");
+        fprintf(stderr, "  例: calc -c 500 ms us\n");
+        return 1;
+    }
+
+    /* conv(<argv[2]>, <argv[3]>, <argv[4]>) の文字列を組み立てる */
+    char expr[MAX_INPUT];
+    int n = snprintf(expr, sizeof(expr), "conv(%s, %s, %s)", argv[2], argv[3], argv[4]);
+    if (n < 0 || n >= (int)sizeof(expr)) {
+        fprintf(stderr, "エラー: 式が長すぎます\n");
+        return 1;
+    }
+
+    char  errmsg[256];
+    Value result = calc_eval(expr, val_int(0), errmsg, sizeof(errmsg));
+    if (errmsg[0]) {
+        fprintf(stderr, "エラー: %s\n", errmsg);
+        return 1;
+    }
+    print_result(result);
+    printf("\n");
+    return 0;
+}
+
 /* -l モード: 式を評価し ln / log2 / log10 を一括表示 */
 static int run_log_mode(int argc, char *argv[]) {
     if (argc < 3) {
@@ -131,11 +159,13 @@ int main(int argc, char *argv[]) {
             return run_eval_mode(argc, argv);
         if (strcmp(argv[1], "-b") == 0)
             return run_bitwise_mode(argc, argv);
+        if (strcmp(argv[1], "-c") == 0)
+            return run_conv_mode(argc, argv);
         if (strcmp(argv[1], "-l") == 0)
             return run_log_mode(argc, argv);
         if (strcmp(argv[1], "-f") == 0)
             return run_format_mode(argc, argv);
-        fprintf(stderr, "不明なオプション: %s\n使用法: calc -e <式> / calc -b <式> / calc -l <式> / calc -f <形式> <式>\n", argv[1]);
+        fprintf(stderr, "不明なオプション: %s\n使用法: calc -e <式> / calc -b <式> / calc -l <式> / calc -f <形式> <式> / calc -c <値> <変換前> <変換後>\n", argv[1]);
         return 1;
     }
     char  input[MAX_INPUT];
