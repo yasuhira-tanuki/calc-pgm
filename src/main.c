@@ -45,6 +45,52 @@ static int run_bitwise_mode(int argc, char *argv[]) {
     return run_expr_from_args(argc, argv, "使用法: calc -b <式>");
 }
 
+/* -f モード: 指定フォーマットで結果を表示 */
+static int run_format_mode(int argc, char *argv[]) {
+    if (argc < 4) {
+        fprintf(stderr, "使用法: calc -f <形式> <式>  (形式: dec/hex/oct/bin/all)\n");
+        return 1;
+    }
+
+    const char *fmt_str = argv[2];
+    VFmt fmt;
+    if      (strcmp(fmt_str, "dec") == 0) fmt = FMT_DEC;
+    else if (strcmp(fmt_str, "hex") == 0) fmt = FMT_HEX;
+    else if (strcmp(fmt_str, "oct") == 0) fmt = FMT_OCT;
+    else if (strcmp(fmt_str, "bin") == 0) fmt = FMT_BIN;
+    else if (strcmp(fmt_str, "all") == 0) fmt = FMT_ALL;
+    else {
+        fprintf(stderr, "不明な形式: %s  (dec/hex/oct/bin/all)\n", fmt_str);
+        return 1;
+    }
+
+    char expr[MAX_INPUT];
+    int pos = 0;
+    for (int i = 3; i < argc; i++) {
+        if (i > 3 && pos < MAX_INPUT - 1)
+            expr[pos++] = ' ';
+        const char *s = argv[i];
+        while (*s && pos < MAX_INPUT - 1)
+            expr[pos++] = *s++;
+    }
+    expr[pos] = '\0';
+
+    char  errmsg[256];
+    Value result = calc_eval(expr, val_int(0), errmsg, sizeof(errmsg));
+    if (errmsg[0]) {
+        fprintf(stderr, "エラー: %s\n", errmsg);
+        return 1;
+    }
+    if (result.is_float && fmt != FMT_ALL && fmt != FMT_DEC) {
+        fprintf(stderr, "エラー: hex/oct/bin は整数のみ対応\n");
+        return 1;
+    }
+    result.fmt = fmt;
+    print_result(result);
+    printf("\n");
+    return 0;
+}
+
 /* -l モード: 式を評価し ln / log2 / log10 を一括表示 */
 static int run_log_mode(int argc, char *argv[]) {
     if (argc < 3) {
@@ -87,7 +133,9 @@ int main(int argc, char *argv[]) {
             return run_bitwise_mode(argc, argv);
         if (strcmp(argv[1], "-l") == 0)
             return run_log_mode(argc, argv);
-        fprintf(stderr, "不明なオプション: %s\n使用法: calc -e <式> / calc -b <式> / calc -l <式>\n", argv[1]);
+        if (strcmp(argv[1], "-f") == 0)
+            return run_format_mode(argc, argv);
+        fprintf(stderr, "不明なオプション: %s\n使用法: calc -e <式> / calc -b <式> / calc -l <式> / calc -f <形式> <式>\n", argv[1]);
         return 1;
     }
     char  input[MAX_INPUT];
