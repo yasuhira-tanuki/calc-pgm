@@ -125,6 +125,12 @@ static int run_types_mode(void) {
     return 0;
 }
 
+/* -c モード: 文字コードの一覧を表示 */
+static int run_enc_mode(void) {
+    print_encodings();
+    return 0;
+}
+
 /* -l モード: 式を評価し ln / log2 / log10 を一括表示 */
 static int run_log_mode(int argc, char *argv[]) {
     if (argc < 3) {
@@ -173,7 +179,9 @@ int main(int argc, char *argv[]) {
             return run_format_mode(argc, argv);
         if (strcmp(argv[1], "-t") == 0)
             return run_types_mode();
-        fprintf(stderr, "不明なオプション: %s\n使用法: calc -e <式> / calc -b <式> / calc -l <式> / calc -f <形式> <式> / calc -u <値> <変換前> <変換後> / calc -t\n", argv[1]);
+        if (strcmp(argv[1], "-c") == 0)
+            return run_enc_mode();
+        fprintf(stderr, "不明なオプション: %s\n使用法: calc -e <式> / calc -b <式> / calc -l <式> / calc -f <形式> <式> / calc -u <値> <変換前> <変換後> / calc -t / calc -c\n", argv[1]);
         return 1;
     }
     char  input[MAX_INPUT];

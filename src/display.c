@@ -120,7 +120,8 @@ void print_help(void) {
     printf("  -l <式>                   式を評価し ln / log2 / log10 を一括表示\n");
     printf("  -f <形式> <式>            指定形式で結果を表示 (形式: dec/hex/oct/bin/all)\n");
     printf("  -u <値> <変換前> <変換後> 単位変換  例: -u 2 gib mb  -u 500 ms us\n");
-    printf("  -t                        整数型・浮動小数点型の一覧を表示\n\n");
+    printf("  -t                        整数型・浮動小数点型の一覧を表示\n");
+    printf("  -c                        文字コードの一覧を表示\n\n");
     printf("【コマンド】\n");
     printf("  help        このヘルプを表示\n");
     printf("  types       整数型の一覧を表示 (サイズ・値の範囲)\n");
