@@ -177,6 +177,10 @@ static int run_log_mode(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
     if (argc > 1) {
+        if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
+            print_help();
+            return 0;
+        }
         if (strcmp(argv[1], "-e") == 0)
             return run_eval_mode(argc, argv);
         if (strcmp(argv[1], "-b") == 0)
@@ -193,7 +197,7 @@ int main(int argc, char *argv[]) {
             return run_size_mode(argc, argv);
         if (strcmp(argv[1], "-c") == 0)
             return run_enc_mode();
-        fprintf(stderr, "不明なオプション: %s\n使用法: calc -e <式> / calc -b <式> / calc -l <式> / calc -f <形式> <式> / calc -u <値> <変換前> <変換後> / calc -s <文字列> / calc -t / calc -c\n", argv[1]);
+        fprintf(stderr, "不明なオプション: %s\n使用法: calc -h / calc -e <式> / calc -b <式> / calc -l <式> / calc -f <形式> <式> / calc -u <値> <変換前> <変換後> / calc -s <文字列> / calc -t / calc -c\n", argv[1]);
         return 1;
     }
     char  input[MAX_INPUT];

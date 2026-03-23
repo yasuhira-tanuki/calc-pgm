@@ -115,6 +115,7 @@ void print_help(void) {
     printf("    conv(n, 変換前, 変換後)  例: conv(2,gib,mb) conv(500,ms,us)\n");
     printf("    基準単位: b(バイト) hz(Hz) sec(秒)\n\n");
     printf("【コマンドライン引数】\n");
+    printf("  -h, --help                このヘルプを表示\n");
     printf("  -e <式>                   式を演算して計算結果を表示\n");
     printf("  -b <式>                   ビット演算式を評価して結果を表示\n");
     printf("  -l <式>                   式を評価し ln / log2 / log10 を一括表示\n");
