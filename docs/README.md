@@ -10,6 +10,7 @@ calc-pgm の内部設計と仕様をまとめた開発者向けドキュメン�
 | ドキュメント | 内容 |
 |--------------|------|
 | [architecture.md](architecture.md) | モジュール構成・データフロー・`Value` 型 |
+| [features.md](features.md) | 機能仕様(演算子・関数の型・戻り値・エラー条件) |
 | [lexer.md](lexer.md) | Lexer の設計・トークン・数値リテラル |
 | [parser.md](parser.md) | Parser の設計・演算子優先順位・特殊形式 |
 | [display.md](display.md) | 表示仕様(2進数表示・浮動小数点表示) |
