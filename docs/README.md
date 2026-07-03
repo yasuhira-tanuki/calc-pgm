@@ -16,3 +16,4 @@ calc-pgm の内部設計と仕様をまとめた開発者向けドキュメン�
 | [parser.md](parser.md) | Parser の設計・演算子優先順位・特殊形式 |
 | [display.md](display.md) | 表示仕様(2進数表示・浮動小数点表示) |
 | [error-handling.md](error-handling.md) | Lexer/Parser の 2 段階エラー伝播 |
+| [development.md](development.md) | 開発者向けガイド(ビルド・依存関係・実行) |
