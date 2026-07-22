@@ -7,14 +7,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## ビルドと実行
 
 ```bash
-make          # ビルド (build/*.o → ./calc)
+make          # ビルド (build/*.o → ./calc-pgm)
 make clean    # 成果物を削除
-./calc        # 対話型REPLを起動
+./calc-pgm    # 対話型REPLを起動
 ```
 
 コンパイラフラグ: `gcc -Wall -Wextra -O2 -std=c11 -Iinclude`
 
-ビルド成果物は `build/` ディレクトリに出力される。`build/` と実行ファイル `calc` は自動生成物のため削除・再生成して問題ない。
+ビルド成果物は `build/` ディレクトリに出力される。`build/` と実行ファイル `calc-pgm` は自動生成物のため削除・再生成して問題ない。
 
 ## アーキテクチャ
 

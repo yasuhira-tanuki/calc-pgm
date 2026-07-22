@@ -37,18 +37,18 @@ static int run_expr_from_args(int argc, char *argv[], const char *usage) {
 
 /* -e モード: 式を評価して結果を表示 */
 static int run_eval_mode(int argc, char *argv[]) {
-    return run_expr_from_args(argc, argv, "使用法: calc -e <式>");
+    return run_expr_from_args(argc, argv, "使用法: calc-pgm -e <式>");
 }
 
 /* -b モード: ビット演算式を評価して結果を表示 */
 static int run_bitwise_mode(int argc, char *argv[]) {
-    return run_expr_from_args(argc, argv, "使用法: calc -b <式>");
+    return run_expr_from_args(argc, argv, "使用法: calc-pgm -b <式>");
 }
 
 /* -f モード: 指定フォーマットで結果を表示 */
 static int run_format_mode(int argc, char *argv[]) {
     if (argc < 4) {
-        fprintf(stderr, "使用法: calc -f <形式> <式>  (形式: dec/hex/oct/bin/all)\n");
+        fprintf(stderr, "使用法: calc-pgm -f <形式> <式>  (形式: dec/hex/oct/bin/all)\n");
         return 1;
     }
 
@@ -94,9 +94,9 @@ static int run_format_mode(int argc, char *argv[]) {
 /* -c モード: 単位変換 conv(<値>, <変換前>, <変換後>) */
 static int run_conv_mode(int argc, char *argv[]) {
     if (argc < 5) {
-        fprintf(stderr, "使用法: calc -u <値> <変換前単位> <変換後単位>\n");
-        fprintf(stderr, "  例: calc -u 2 gib mb\n");
-        fprintf(stderr, "  例: calc -u 500 ms us\n");
+        fprintf(stderr, "使用法: calc-pgm -u <値> <変換前単位> <変換後単位>\n");
+        fprintf(stderr, "  例: calc-pgm -u 2 gib mb\n");
+        fprintf(stderr, "  例: calc-pgm -u 500 ms us\n");
         return 1;
     }
 
@@ -122,7 +122,7 @@ static int run_conv_mode(int argc, char *argv[]) {
 /* -s モード: 文字列のサイズ情報を表示 */
 static int run_size_mode(int argc, char *argv[]) {
     if (argc < 3) {
-        fprintf(stderr, "使用法: calc -s <文字列>\n");
+        fprintf(stderr, "使用法: calc-pgm -s <文字列>\n");
         return 1;
     }
     print_size(argv[2]);
@@ -144,7 +144,7 @@ static int run_enc_mode(void) {
 /* -l モード: 式を評価し ln / log2 / log10 を一括表示 */
 static int run_log_mode(int argc, char *argv[]) {
     if (argc < 3) {
-        fprintf(stderr, "使用法: calc -l <式>\n");
+        fprintf(stderr, "使用法: calc-pgm -l <式>\n");
         return 1;
     }
 
@@ -197,7 +197,7 @@ int main(int argc, char *argv[]) {
             return run_size_mode(argc, argv);
         if (strcmp(argv[1], "-c") == 0)
             return run_enc_mode();
-        fprintf(stderr, "不明なオプション: %s\n使用法: calc -h / calc -e <式> / calc -b <式> / calc -l <式> / calc -f <形式> <式> / calc -u <値> <変換前> <変換後> / calc -s <文字列> / calc -t / calc -c\n", argv[1]);
+        fprintf(stderr, "不明なオプション: %s\n使用法: calc-pgm -h / calc-pgm -e <式> / calc-pgm -b <式> / calc-pgm -l <式> / calc-pgm -f <形式> <式> / calc-pgm -u <値> <変換前> <変換後> / calc-pgm -s <文字列> / calc-pgm -t / calc-pgm -c\n", argv[1]);
         return 1;
     }
     char  input[MAX_INPUT];
