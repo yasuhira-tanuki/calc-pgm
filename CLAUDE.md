@@ -27,3 +27,4 @@ make clean    # 成果物を削除
 - [docs/parser.md](docs/parser.md) — Parser の設計・演算子優先順位・特殊形式
 - [docs/display.md](docs/display.md) — 表示仕様(2進数表示・浮動小数点表示)
 - [docs/error-handling.md](docs/error-handling.md) — Lexer/Parser の 2 段階エラー伝播
+- [docs/agent-tools.md](docs/agent-tools.md) — AI エージェント連携(`agent-tools/`: Rust 製の単一バイナリ MCP サーバー、C エンジンを FFI 埋め込み)

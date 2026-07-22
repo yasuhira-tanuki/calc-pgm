@@ -472,3 +472,12 @@ build/         コンパイル成果物 (自動生成)
 - `Value` 型は `is_float` フラグで整数 (`int64_t`) と浮動小数点 (`double`) を区別します
 - ビット演算・シフト・剰余は整数のみ許可し、float に適用するとエラーになります
 - 単位変換関数の結果は常に10進表示 (`= N`)。他の演算と組み合わせると FMT_ALL に戻ります
+
+## AI エージェントからの利用
+
+`agent-tools/` に、calc-pgm の全機能を AI エージェントから利用するための **Rust 製の単一バイナリ MCP サーバー**を用意しています。
+
+- 計算エンジン(C)をバイナリに静的に埋め込み、FFI で直接呼び出します(プロセス生成なし・外部ランタイム不要)
+- MCP (Model Context Protocol) 対応クライアント全般から利用できます。Claude Code / Claude Desktop / LangGraph(adapter 経由)など
+
+設計・使い方は [docs/agent-tools.md](docs/agent-tools.md) を参照してください。

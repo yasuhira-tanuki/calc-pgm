@@ -22,6 +22,7 @@ src/main.c               REPLループ、入力整形、コマンド分岐 (help
 - [Parser の設計](parser.md)
 - [表示仕様](display.md)
 - [エラー伝播](error-handling.md)
+- [エージェント連携](agent-tools.md) — `agent-tools/`(Rust 製の単一バイナリ MCP サーバー、C エンジンを FFI 埋め込み)
 
 ## Value 型
 
