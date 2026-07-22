@@ -36,6 +36,10 @@
 *.x86_64
 *.hex
 
+# Build output of this project
+/calc-pgm
+/build/
+
 # Debug files
 *.dSYM/
 *.su
