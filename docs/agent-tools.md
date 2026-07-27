@@ -12,8 +12,9 @@
   **バイナリに静的に埋め込み、FFI で直接呼ぶ**。呼び出しごとの `fork`/`exec` を無くす。
 - **標準プロトコルで公開**: MCP (Model Context Protocol) サーバーとして公開し、
   Claude Code / Claude Desktop / LangGraph(adapter 経由)など MCP 対応クライアント全般から使えるようにする。
-- **本体の計算ロジックは不変**: `src/` の計算ロジックには手を入れず、埋め込みと表示整形のための
-  薄い C シムのみを追加する。
+- **本体の計算ロジックは不変**: `src/` の計算ロジック(`lexer.c`/`parser.c`)には手を入れない。
+  表示(`display.c`)は出力先を `FILE*` に一般化する挙動不変の小改修のみ行い、埋め込み・受け渡し用の
+  薄い C シムを追加する。
 
 ### オーバーヘッド設計上の要点
 
@@ -32,9 +33,8 @@ agent-tools/
 ├── csrc/
 │   └── calc_shim.c       # calc_eval / 各 display をバッファ経由で呼ぶ薄い C API
 ├── src/
-│   ├── main.rs           # MCP サーバー起動(stdio トランスポート)
-│   ├── engine.rs         # FFI 宣言(extern "C")+ 安全な Rust ラッパー
-│   └── tools.rs          # 全モードを MCP ツールとして公開
+│   ├── main.rs           # MCP サーバー(ツール定義・stdio トランスポート起動)
+│   └── engine.rs         # FFI 宣言(extern "C")+ 安全な Rust ラッパー
 └── README.md
 ```
 
@@ -75,11 +75,64 @@ CLI の各モード(→ [cli.md](cli.md))に対応するツールを公開する
 
 ## クライアントからの利用
 
-- **Claude Code / Claude Desktop**: MCP サーバーとして登録し、上記ツールを呼び出す。
-- **LangChain / LangGraph**(当初の用途・別リポジトリ): `langchain-mcp-adapters` で MCP ツールを
-  LangChain ツールへ変換して利用する。`@tool` の手書きは不要。
+いずれの方法でも、まず release ビルドしたバイナリの**絶対パス**を用意する
+(`agent-tools/target/release/calc-pgm-mcp`)。stdio トランスポートのため、クライアントが
+このバイナリを子プロセスとして起動する(ローカル利用)。
+
+### Claude Code
+
+```bash
+claude mcp add calc-pgm -- /absolute/path/to/agent-tools/target/release/calc-pgm-mcp
+```
+
+### 設定ファイル形式(Claude Desktop 等)
+
+```json
+{
+  "mcpServers": {
+    "calc-pgm": {
+      "command": "/absolute/path/to/agent-tools/target/release/calc-pgm-mcp"
+    }
+  }
+}
+```
+
+### 手動疎通(デバッグ用)
+
+サーバーは stdin から JSON-RPC を受け取り stdout に応答する。1 行ずつ流して確認できる。
+
+```bash
+printf '%s\n' \
+'{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"t","version":"0"}}}' \
+'{"jsonrpc":"2.0","method":"notifications/initialized"}' \
+'{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
+'{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"evaluate","arguments":{"expression":"1 + 2 * 3"}}}' \
+| ./target/release/calc-pgm-mcp
+```
+
+### LangChain / LangGraph(当初の用途・別リポジトリ)
+
+`langchain-mcp-adapters` で MCP ツールを LangChain ツールへ変換し、ReAct エージェント等から
+利用する(`@tool` の手書きは不要)。
+
+```python
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from langgraph.prebuilt import create_react_agent
+from langchain_anthropic import ChatAnthropic
+
+client = MultiServerMCPClient({
+    "calc-pgm": {
+        "command": "/absolute/path/to/agent-tools/target/release/calc-pgm-mcp",
+        "args": [],
+        "transport": "stdio",
+    }
+})
+tools = await client.get_tools()
+agent = create_react_agent(ChatAnthropic(model="claude-opus-4-8"), tools)
+```
 
 いずれの場合も **LangChain 等への依存はこのリポジトリに持ち込まない**(MCP 標準で疎結合に保つ)。
+具体的な実行手順は [../agent-tools/README.md](../agent-tools/README.md) を参照。
 
 ## 設計判断メモ
 
