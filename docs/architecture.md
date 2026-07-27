@@ -8,11 +8,12 @@
 include/value.h          Value型 (static inline) ← すべてのモジュールが依存
 include/lexer.h          TKind / Tok / Lex 型の定義、lex_init・lex_next の宣言
 include/parser.h         calc_eval の宣言
-include/display.h        print_result・print_help・print_types・print_encodings・print_size・print_log_result の宣言、VERSION マクロ
+include/display.h        print_* (stdout へ出力) と fprint_* (FILE* を指定) の宣言、VERSION マクロ
 
 src/lexer.c              文字列 → トークン列 (lex_next で1トークン先読み)
 src/parser.c             再帰下降構文解析、calc_eval が公開API
-src/display.c            Value を各形式で出力。浮動小数点は %.10f で表示(科学的記数法なし、末尾ゼロ除去)
+src/display.c            Value を各形式で出力 (整形は fprint_* に実装し print_* は stdout を渡すラッパー)。
+                         浮動小数点は %.10f で表示(科学的記数法なし、末尾ゼロ除去)
 src/main.c               REPLループ、入力整形、コマンド分岐 (help/types/enc/size/quit/exit)
 ```
 

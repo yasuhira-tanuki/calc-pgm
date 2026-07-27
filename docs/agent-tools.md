@@ -21,7 +21,7 @@
 | 層 | 対処 |
 |----|------|
 | プロセス生成(`fork`/`exec`) | **無くす**。エンジンを埋め込み、FFI 関数呼び出し(μ秒オーダー)にする |
-| 言語ランタイム | **無くす**。Rust の単一静的バイナリ。FFI は `extern "C"` でほぼゼロコスト |
+| 言語ランタイム | **無くす**。Rust の単一バイナリ(外部依存は libc / libm のみ)。FFI は `extern "C"` でほぼゼロコスト |
 | 計算 | C 本体(`lexer.c`/`parser.c`)がそのまま担う |
 
 ## 構成
@@ -29,7 +29,9 @@
 ```
 agent-tools/
 ├── Cargo.toml            # Rust プロジェクト定義(rmcp などに依存)
+├── Cargo.lock            # 依存バージョンの固定(バイナリクレートのためコミットする)
 ├── build.rs              # cc クレートで C エンジン + シムをコンパイルし静的リンク
+├── .gitignore            # /target(ビルド成果物)を除外
 ├── csrc/
 │   └── calc_shim.c       # calc_eval / 各 display をバッファ経由で呼ぶ薄い C API
 ├── src/
@@ -43,7 +45,8 @@ agent-tools/
 - `cargo build --release` で単一バイナリ(例: `calc-pgm-mcp`)を生成する。
 - `build.rs` が `cc` クレートで **`src/lexer.c` / `src/parser.c` / `src/display.c` と `csrc/calc_shim.c`** を
   コンパイルし、Rust バイナリに静的リンクする。REPL/CLI 用の `src/main.c` は**使わない**(エンジンのみ埋め込む)。
-- 生成物は自己完結した 1 ファイル。実行時に `calc-pgm` バイナリや Python を必要としない。
+- 生成物は 1 ファイルで完結する。実行時に `calc-pgm` バイナリや Python ランタイムを必要としない
+  (共有ライブラリへの依存は libc / libm / libgcc_s のみ)。
 
 ## FFI 境界と C シム
 
@@ -52,8 +55,19 @@ agent-tools/
 `display` の整形ロジックを **`FILE*`/バッファ経由で再利用**する(CLI と出力が完全一致し、整形の二重管理を避ける)。
 
 - 計算ロジック(`calc_eval` 本体)には手を入れない。追加するのは表示・受け渡し用の薄い API のみ。
-- Rust 側(`engine.rs`)は `extern "C"` 宣言を安全な Rust 関数に包み、エラーは `Result` で返す。
-  バッファ長・NUL 終端・UTF-8 検証は Rust 側で保証する。
+- C シムは `open_memstream` 上の `FILE*` へ `fprint_*` を出力させる。プロセスの `stdout` には
+  一切書かないため、MCP の stdio 通信路と干渉しない。
+- Rust 側(`engine.rs`)は `extern "C"` 宣言を安全な Rust 関数に包み、計算エラーは `Result::Err` で返す。
+
+### Rust 側で保証する境界条件
+
+| 項目 | 扱い |
+|------|------|
+| スレッド安全 | C エンジンの再入可能性に依存せず、全 FFI 呼び出しを `Mutex` で直列化する。1 回の計算は μ秒オーダーのため競合コストは無視できる |
+| NUL 終端 | 入力は `CString` へ変換し、内部 NUL を含む文字列はエラーとして弾く |
+| バッファ長 | 出力バッファは 64KiB 固定 (`OUT_BUF`)、エラーバッファは 256B (C 側 `errmsg` と同値)。長さは常に C へ明示的に渡す |
+| 出力の切り詰め | C 側は `snprintf` で書き込むため、64KiB を超える出力は黙って切り詰められる。現行の最大出力(型一覧・文字コード一覧)は数 KB で余裕がある |
+| UTF-8 | `String::from_utf8_lossy` で読み取る。不正バイトはエラーとせず置換文字に変換する(パニックを起こさない方を優先) |
 
 ## 公開する MCP ツール(全モード)
 
