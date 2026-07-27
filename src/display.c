@@ -11,31 +11,31 @@
 #include <string.h>
 
 /* 2進数を4ビット区切り '_' で表示 */
-static void print_bin(int64_t iv) {
+static void fprint_bin(FILE *fp, int64_t iv) {
     uint64_t uv = (uint64_t)iv;
-    printf("0b");
+    fputs("0b", fp);
 
     if (iv < 0) {
         /* 負数: 64ビット全体を4ビット区切りで表示 */
         for (int i = 63; i >= 0; i--) {
-            putchar('0' + (int)((uv >> i) & 1));
-            if (i > 0 && i % 4 == 0) putchar('_');
+            putc('0' + (int)((uv >> i) & 1), fp);
+            if (i > 0 && i % 4 == 0) putc('_', fp);
         }
     } else if (uv == 0) {
-        putchar('0');
+        putc('0', fp);
     } else {
         /* 正数: 先頭ゼロを省略 */
         int msb = 0;
         for (int i = 63; i >= 0; i--)
             if ((uv >> i) & 1) { msb = i; break; }
         for (int i = msb; i >= 0; i--) {
-            putchar('0' + (int)((uv >> i) & 1));
-            if (i > 0 && i % 4 == 0) putchar('_');
+            putc('0' + (int)((uv >> i) & 1), fp);
+            if (i > 0 && i % 4 == 0) putc('_', fp);
         }
     }
 }
 
-void print_result(Value v) {
+void fprint_result(FILE *fp, Value v) {
     if (v.is_float) {
         char buf[64];
         snprintf(buf, sizeof(buf), "%.10f", v.dval);
@@ -48,37 +48,39 @@ void print_result(Value v) {
             while (end > dot && *end == '0') *end-- = '\0';
             if (end == dot) *end = '\0';
         }
-        printf("  = %s\n", buf);
+        fprintf(fp, "  = %s\n", buf);
         if (v.warn)
-            printf("  * 計算結果が桁溢れしています\n");
+            fprintf(fp, "  * 計算結果が桁溢れしています\n");
         return;
     }
     uint64_t uv = (uint64_t)v.ival;
     switch (v.fmt) {
         case FMT_DEC:
-            printf("  = %" PRId64 "\n", v.ival);
+            fprintf(fp, "  = %" PRId64 "\n", v.ival);
             break;
         case FMT_HEX:
-            printf("  HEX: 0x%" PRIX64 "\n", uv);
+            fprintf(fp, "  HEX: 0x%" PRIX64 "\n", uv);
             break;
         case FMT_OCT:
-            printf("  OCT: 0o%" PRIo64 "\n", uv);
+            fprintf(fp, "  OCT: 0o%" PRIo64 "\n", uv);
             break;
         case FMT_BIN:
-            printf("  BIN: ");
-            print_bin(v.ival);
-            printf("\n");
+            fprintf(fp, "  BIN: ");
+            fprint_bin(fp, v.ival);
+            fprintf(fp, "\n");
             break;
         default: /* FMT_ALL */
-            printf("  DEC: %" PRId64 "\n", v.ival);
-            printf("  HEX: 0x%" PRIX64 "\n", uv);
-            printf("  OCT: 0o%" PRIo64 "\n", uv);
-            printf("  BIN: ");
-            print_bin(v.ival);
-            printf("\n");
+            fprintf(fp, "  DEC: %" PRId64 "\n", v.ival);
+            fprintf(fp, "  HEX: 0x%" PRIX64 "\n", uv);
+            fprintf(fp, "  OCT: 0o%" PRIo64 "\n", uv);
+            fprintf(fp, "  BIN: ");
+            fprint_bin(fp, v.ival);
+            fprintf(fp, "\n");
             break;
     }
 }
+
+void print_result(Value v) { fprint_result(stdout, v); }
 
 void print_help(void) {
     printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
@@ -143,17 +145,18 @@ void print_help(void) {
 }
 
 /* 整数型の1行を表示するヘルパー */
-static void print_int_row(const char *name, int bytes, int64_t vmin, uint64_t vmax, int is_signed) {
+static void fprint_int_row(FILE *fp, const char *name, int bytes,
+                           int64_t vmin, uint64_t vmax, int is_signed) {
     char minbuf[32], maxbuf[32];
     if (is_signed)
         snprintf(minbuf, sizeof minbuf, "%" PRId64, vmin);
     else
         snprintf(minbuf, sizeof minbuf, "0");
     snprintf(maxbuf, sizeof maxbuf, "%" PRIu64, vmax);
-    printf("  %-10s  %4d   %22s   %20s\n", name, bytes, minbuf, maxbuf);
+    fprintf(fp, "  %-10s  %4d   %22s   %20s\n", name, bytes, minbuf, maxbuf);
 }
 
-void print_types(void) {
+void fprint_types(FILE *fp) {
     static const struct {
         const char *name;
         int         bytes;
@@ -172,46 +175,48 @@ void print_types(void) {
     };
 
     /* ── 整数型 ── */
-    printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-    printf("  整数型\n");
-    printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-    printf("  %-10s  %4s   %22s   %20s\n", "型名", "byte", "最小値", "最大値");
-    printf("  ─────────────────────────────────────────────────────────────────────────\n");
+    fprintf(fp, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+    fprintf(fp, "  整数型\n");
+    fprintf(fp, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+    fprintf(fp, "  %-10s  %4s   %22s   %20s\n", "型名", "byte", "最小値", "最大値");
+    fprintf(fp, "  ─────────────────────────────────────────────────────────────────────────\n");
     for (int i = 0; i < (int)(sizeof itbl / sizeof itbl[0]); i++)
-        print_int_row(itbl[i].name, itbl[i].bytes,
-                      itbl[i].vmin, itbl[i].vmax, itbl[i].is_signed);
+        fprint_int_row(fp, itbl[i].name, itbl[i].bytes,
+                       itbl[i].vmin, itbl[i].vmax, itbl[i].is_signed);
 
-    printf("  ─────────────────────────────────────────────────────────────────────────\n");
+    fprintf(fp, "  ─────────────────────────────────────────────────────────────────────────\n");
     /* char: 符号は実装依存 (ARM は unsigned がデフォルト) */
-    print_int_row("char", (int)sizeof(char),
-                  (int64_t)CHAR_MIN, (uint64_t)(unsigned char)UCHAR_MAX,
-                  CHAR_MIN < 0);
+    fprint_int_row(fp, "char", (int)sizeof(char),
+                   (int64_t)CHAR_MIN, (uint64_t)(unsigned char)UCHAR_MAX,
+                   CHAR_MIN < 0);
     /* long: サイズはプラットフォーム依存 */
-    print_int_row("long", (int)sizeof(long),
-                  (int64_t)LONG_MIN, (uint64_t)(unsigned long)LONG_MAX, 1);
+    fprint_int_row(fp, "long", (int)sizeof(long),
+                   (int64_t)LONG_MIN, (uint64_t)(unsigned long)LONG_MAX, 1);
 
     /* ── 浮動小数点型 ── */
-    printf("\n");
-    printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-    printf("  浮動小数点型\n");
-    printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-    printf("  %-10s  %4s   %22s   %20s   %s\n",
-           "型名", "byte", "最小値", "最大値", "有効桁数");
-    printf("  ─────────────────────────────────────────────────────────────────────────\n");
+    fprintf(fp, "\n");
+    fprintf(fp, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+    fprintf(fp, "  浮動小数点型\n");
+    fprintf(fp, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+    fprintf(fp, "  %-10s  %4s   %22s   %20s   %s\n",
+            "型名", "byte", "最小値", "最大値", "有効桁数");
+    fprintf(fp, "  ─────────────────────────────────────────────────────────────────────────\n");
     {
         char minbuf[32], maxbuf[32];
         snprintf(minbuf, sizeof minbuf, "%.7e", -(double)FLT_MAX);
         snprintf(maxbuf, sizeof maxbuf, "%.7e",  (double)FLT_MAX);
-        printf("  %-10s  %4d   %22s   %20s   約%d桁\n",
-               "float", (int)sizeof(float), minbuf, maxbuf, FLT_DIG);
+        fprintf(fp, "  %-10s  %4d   %22s   %20s   約%d桁\n",
+                "float", (int)sizeof(float), minbuf, maxbuf, FLT_DIG);
 
         snprintf(minbuf, sizeof minbuf, "%.7e", -DBL_MAX);
         snprintf(maxbuf, sizeof maxbuf, "%.7e",  DBL_MAX);
-        printf("  %-10s  %4d   %22s   %20s   約%d桁\n",
-               "double", (int)sizeof(double), minbuf, maxbuf, DBL_DIG);
+        fprintf(fp, "  %-10s  %4d   %22s   %20s   約%d桁\n",
+                "double", (int)sizeof(double), minbuf, maxbuf, DBL_DIG);
     }
-    printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+    fprintf(fp, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 }
+
+void print_types(void) { fprint_types(stdout); }
 
 /* UTF-8文字列のUnicodeコードポイント数 */
 static int utf8_codepoints(const char *s) {
@@ -236,7 +241,7 @@ static int encoded_bytes(const char *str, const char *enc) {
     return result;
 }
 
-void print_size(const char *str) {
+void fprint_size(FILE *fp, const char *str) {
     static const struct { const char *label; const char *enc; } tbl[] = {
         { "UTF-8",     "UTF-8"    },
         { "UTF-16LE",  "UTF-16LE" },
@@ -245,18 +250,20 @@ void print_size(const char *str) {
         { "EUC-JP",    "EUC-JP"   },
         { "ASCII",     "ASCII"    },
     };
-    printf("  文字数: %d (Unicodeコードポイント)\n", utf8_codepoints(str));
-    printf("  ─────────────────────────────────────\n");
+    fprintf(fp, "  文字数: %d (Unicodeコードポイント)\n", utf8_codepoints(str));
+    fprintf(fp, "  ─────────────────────────────────────\n");
     for (int i = 0; i < (int)(sizeof tbl / sizeof tbl[0]); i++) {
         int n = encoded_bytes(str, tbl[i].enc);
-        if (n < 0) printf("  %-10s : 変換不可\n",        tbl[i].label);
-        else       printf("  %-10s : %d byte\n", tbl[i].label, n);
+        if (n < 0) fprintf(fp, "  %-10s : 変換不可\n",        tbl[i].label);
+        else       fprintf(fp, "  %-10s : %d byte\n", tbl[i].label, n);
     }
-    printf("\n");
+    fprintf(fp, "\n");
 }
 
+void print_size(const char *str) { fprint_size(stdout, str); }
+
 /* 浮動小数点値を末尾ゼロ除去して表示するヘルパー */
-static void print_double(double v) {
+static void fprint_double(FILE *fp, double v) {
     char buf[64];
     snprintf(buf, sizeof(buf), "%.10f", v);
     char *dot = strchr(buf, '.');
@@ -267,16 +274,18 @@ static void print_double(double v) {
         while (end > dot && *end == '0') *end-- = '\0';
         if (end == dot) *end = '\0';
     }
-    printf("%s", buf);
+    fprintf(fp, "%s", buf);
 }
 
-void print_log_result(double x) {
-    printf("  ln   : "); print_double(log(x));   printf("\n");
-    printf("  log2 : "); print_double(log2(x));  printf("\n");
-    printf("  log10: "); print_double(log10(x)); printf("\n");
+void fprint_log_result(FILE *fp, double x) {
+    fprintf(fp, "  ln   : "); fprint_double(fp, log(x));   fprintf(fp, "\n");
+    fprintf(fp, "  log2 : "); fprint_double(fp, log2(x));  fprintf(fp, "\n");
+    fprintf(fp, "  log10: "); fprint_double(fp, log10(x)); fprintf(fp, "\n");
 }
 
-void print_encodings(void) {
+void print_log_result(double x) { fprint_log_result(stdout, x); }
+
+void fprint_encodings(FILE *fp) {
     static const struct {
         const char *name;    /* NULL = 区切り線 */
         const char *size;    /* 1文字あたりのバイト数 */
@@ -294,13 +303,15 @@ void print_encodings(void) {
     const char *sep  = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
     const char *line = "  ─────────────────────────────────────────────────────────────────────────";
 
-    printf("%s\n  文字コード一覧\n%s\n", sep, sep);
-    printf("  %-12s  %-8s  %15s   %s\n", "エンコード", "1文字(byte)", "収録文字数", "備考");
-    printf("%s\n", line);
+    fprintf(fp, "%s\n  文字コード一覧\n%s\n", sep, sep);
+    fprintf(fp, "  %-12s  %-8s  %15s   %s\n", "エンコード", "1文字(byte)", "収録文字数", "備考");
+    fprintf(fp, "%s\n", line);
     for (int i = 0; i < (int)(sizeof tbl / sizeof tbl[0]); i++) {
-        if (!tbl[i].name) { printf("%s\n", line); continue; }
-        printf("  %-12s  %-8s  %15s   %s\n",
-               tbl[i].name, tbl[i].size, tbl[i].chars, tbl[i].note);
+        if (!tbl[i].name) { fprintf(fp, "%s\n", line); continue; }
+        fprintf(fp, "  %-12s  %-8s  %15s   %s\n",
+                tbl[i].name, tbl[i].size, tbl[i].chars, tbl[i].note);
     }
-    printf("%s\n", sep);
+    fprintf(fp, "%s\n", sep);
 }
+
+void print_encodings(void) { fprint_encodings(stdout); }
