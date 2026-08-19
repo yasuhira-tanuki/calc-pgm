@@ -25,12 +25,12 @@ cargo test                 # C エンジンを埋め込んだ状態で FFI ラ�
 
 | ツール | 内容 |
 |--------|------|
-| `evaluate` | 数式・ビット演算式を評価 |
-| `bitwise` | ビット演算式を評価(evaluate と同じ評価器) |
+| `evaluate_expression` | 数式・ビット演算を含む式を演算 |
+| `evaluate_bitwise` | ビット演算を含む式を演算(`evaluate_expression` と同じ演算処理) |
+| `calculate_logarithms` | ln / log2 / log10 を一括表示 |
 | `format_number` | 指定形式(dec/hex/oct/bin/all)で表示 |
 | `convert_unit` | 単位変換(データサイズ/周波数/時間) |
-| `logarithms` | ln / log2 / log10 を一括表示 |
-| `char_size` | 文字数・各エンコードのバイト数 |
+| `get_char_size` | 文字数・各エンコードのバイト数 |
 | `list_types` | 整数型・浮動小数点型の一覧 |
 | `list_encodings` | 文字コードの一覧 |
 
@@ -67,7 +67,7 @@ printf '%s\n' \
 '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"t","version":"0"}}}' \
 '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
 '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
-'{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"evaluate","arguments":{"expression":"1 + 2 * 3"}}}' \
+'{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"evaluate_expression","arguments":{"expression":"1 + 2 * 3"}}}' \
 | ./target/release/calc-pgm-mcp
 ```
 

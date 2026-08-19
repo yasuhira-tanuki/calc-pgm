@@ -119,8 +119,8 @@ void print_help(void) {
     printf("【コマンドライン引数】\n");
     printf("  -h, --help                このヘルプを表示\n");
     printf("  -e <式>                   式を演算して計算結果を表示\n");
-    printf("  -b <式>                   ビット演算式を評価して結果を表示\n");
-    printf("  -l <式>                   式を評価し ln / log2 / log10 を一括表示\n");
+    printf("  -b <式>                   ビット演算を含む式を演算して結果を表示\n");
+    printf("  -l <式>                   式を演算し ln / log2 / log10 を一括表示\n");
     printf("  -f <形式> <式>            指定形式で結果を表示 (形式: dec/hex/oct/bin/all)\n");
     printf("  -u <値> <変換前> <変換後> 単位変換  例: -u 2 gib mb  -u 500 ms us\n");
     printf("  -t                        整数型・浮動小数点型の一覧を表示\n");

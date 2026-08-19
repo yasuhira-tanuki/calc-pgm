@@ -6,7 +6,7 @@
 
 #define MAX_INPUT 1024
 
-/* 2つ目以降の引数を式として結合して評価し結果を表示する共通処理 */
+/* 2つ目以降の引数を式として結合して演算し結果を表示する共通処理 */
 static int run_expr_from_args(int argc, char *argv[], const char *usage) {
     if (argc < 3) {
         fprintf(stderr, "%s\n", usage);
@@ -35,12 +35,12 @@ static int run_expr_from_args(int argc, char *argv[], const char *usage) {
     return 0;
 }
 
-/* -e モード: 式を評価して結果を表示 */
+/* -e モード: 式を演算して結果を表示 */
 static int run_eval_mode(int argc, char *argv[]) {
     return run_expr_from_args(argc, argv, "使用法: calc-pgm -e <式>");
 }
 
-/* -b モード: ビット演算式を評価して結果を表示 */
+/* -b モード: ビット演算を含む式を演算して結果を表示 */
 static int run_bitwise_mode(int argc, char *argv[]) {
     return run_expr_from_args(argc, argv, "使用法: calc-pgm -b <式>");
 }
@@ -141,7 +141,7 @@ static int run_enc_mode(void) {
     return 0;
 }
 
-/* -l モード: 式を評価し ln / log2 / log10 を一括表示 */
+/* -l モード: 式を演算し ln / log2 / log10 を一括表示 */
 static int run_log_mode(int argc, char *argv[]) {
     if (argc < 3) {
         fprintf(stderr, "使用法: calc-pgm -l <式>\n");

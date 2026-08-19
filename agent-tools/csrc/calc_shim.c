@@ -34,7 +34,7 @@ static void capture_result(Value v, char *out, int outsz) {
     free(buf);
 }
 
-/* -e / -b: 式を評価して結果を整形 */
+/* -e / -b: 式を演算して結果を整形 */
 int calc_eval_str(const char *expr, char *out, int outsz, char *err, int errsz) {
     char  errmsg[256];
     Value v = calc_eval(expr, val_int(0), errmsg, (int)sizeof errmsg);

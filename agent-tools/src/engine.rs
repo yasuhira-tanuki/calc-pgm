@@ -37,7 +37,7 @@ fn read_cbuf(buf: &[c_char]) -> String {
     String::from_utf8_lossy(&bytes[..n]).trim_end().to_string()
 }
 
-/// -e: 式評価
+/// -e: 式の演算
 pub fn evaluate(expr: &str) -> Result<String, String> {
     let e = to_cstring(expr)?;
     let mut out = vec![0 as c_char; OUT_BUF];

@@ -47,7 +47,7 @@ make clean    # build/ と実行ファイルを削除
 ```bash
 ./calc-pgm            # 対話モード (REPL) を起動
 ./calc-pgm -h         # ヘルプ
-./calc-pgm -e "1 + 2" # 引数モードで式を評価
+./calc-pgm -e "1 + 2" # 引数モードで式を演算
 ```
 
 CLI の全モードと入出力の仕様は [cli.md](cli.md) を参照。
