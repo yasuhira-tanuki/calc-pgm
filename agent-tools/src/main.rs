@@ -70,20 +70,24 @@ impl CalcServer {
 
     /// 数式を評価し、結果を DEC/HEX/OCT/BIN 等で表示する。算術・ビット演算・べき乗・
     /// 進数リテラル(0x/0o/0b)・単位変換関数・対数関数などに対応。例: "1 + 2 * 3"
+    /// 計算式の答えが必要なときにまず呼ぶ汎用ツール。基数を指定したい場合は format_number、
+    /// ビット演算が主目的の場合は evaluate_bitwise を使う。
     #[tool]
-    async fn evaluate(&self, Parameters(a): Parameters<ExprArgs>) -> Result<CallToolResult, ErrorData> {
+    async fn evaluate_expression(&self, Parameters(a): Parameters<ExprArgs>) -> Result<CallToolResult, ErrorData> {
         Ok(tool_result(engine::evaluate(&a.expression)))
     }
 
-    /// ビット演算式を評価する(evaluate と同じ評価器。ビット演算用途を明示するためのツール)。
+    /// ビット演算式を評価する(evaluate_expression と同じ評価器。ビット演算用途を明示するためのツール)。
     /// 例: "0xFF & 0x0F", "1 << 8", "~0", "0b1100 ^ 0b1010"
+    /// マスク・シフト・フラグ操作などビット演算が主目的のときに呼ぶ。結果は evaluate_expression と同じ。
     #[tool]
-    async fn bitwise(&self, Parameters(a): Parameters<ExprArgs>) -> Result<CallToolResult, ErrorData> {
+    async fn evaluate_bitwise(&self, Parameters(a): Parameters<ExprArgs>) -> Result<CallToolResult, ErrorData> {
         Ok(tool_result(engine::evaluate(&a.expression)))
     }
 
     /// 式を評価し、指定形式で結果を表示する。format は dec/hex/oct/bin/all。
     /// hex/oct/bin は整数のみ対応(浮動小数点はエラー)。
+    /// 出力の基数を指定したいとき(16 進だけ見たい、全基数を並べて見たい)に呼ぶ。
     #[tool]
     async fn format_number(&self, Parameters(a): Parameters<FormatArgs>) -> Result<CallToolResult, ErrorData> {
         Ok(tool_result(engine::format_number(&a.format, &a.expression)))
@@ -91,31 +95,36 @@ impl CalcServer {
 
     /// 単位変換を行う。同一カテゴリ(データサイズ/周波数/時間)内でのみ変換可能。
     /// 例: value="2", from_unit="gib", to_unit="mb"
+    /// GiB→MB、ms→us、MHz→GHz のように単位をまたいだ値が必要なときに呼ぶ。
     #[tool]
     async fn convert_unit(&self, Parameters(a): Parameters<ConvertArgs>) -> Result<CallToolResult, ErrorData> {
         Ok(tool_result(engine::convert_unit(&a.value, &a.from_unit, &a.to_unit)))
     }
 
     /// 式を評価し、その値の ln(自然対数)/ log2 / log10 を一括表示する。値は正の数が必要。
+    /// ビット幅の見積もりや桁数の概算など、底の異なる対数をまとめて見たいときに呼ぶ。
     #[tool]
-    async fn logarithms(&self, Parameters(a): Parameters<ExprArgs>) -> Result<CallToolResult, ErrorData> {
+    async fn calculate_logarithms(&self, Parameters(a): Parameters<ExprArgs>) -> Result<CallToolResult, ErrorData> {
         Ok(tool_result(engine::logarithms(&a.expression)))
     }
 
     /// 文字列の Unicode コードポイント数と、各エンコード(UTF-8/16/32, Shift-JIS, EUC-JP, ASCII)
     /// でのバイト数を表示する。
+    /// 文字列がバッファやカラム長に収まるかを、エンコードごとに確認したいときに呼ぶ。
     #[tool]
-    async fn char_size(&self, Parameters(a): Parameters<TextArgs>) -> Result<CallToolResult, ErrorData> {
+    async fn get_char_size(&self, Parameters(a): Parameters<TextArgs>) -> Result<CallToolResult, ErrorData> {
         Ok(tool_result(engine::char_size(&a.text)))
     }
 
     /// C 言語の整数型・浮動小数点型のサイズ・値の範囲・有効桁数の一覧を表示する。
+    /// 型を選ぶとき、値が収まるか(オーバーフローしないか)を確認したいときに呼ぶ。
     #[tool]
     async fn list_types(&self) -> Result<CallToolResult, ErrorData> {
         Ok(CallToolResult::success(vec![ContentBlock::text(engine::types())]))
     }
 
     /// 文字コード(ASCII, UTF-8/16/32, Shift-JIS, EUC-JP)のバイト数・収録文字数・備考の一覧を表示する。
+    /// エンコードを選ぶとき、および get_char_size の結果を解釈する前提を確認したいときに呼ぶ。
     #[tool]
     async fn list_encodings(&self) -> Result<CallToolResult, ErrorData> {
         Ok(CallToolResult::success(vec![ContentBlock::text(engine::encodings())]))

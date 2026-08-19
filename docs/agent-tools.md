@@ -76,16 +76,22 @@ CLI の各モード(→ [cli.md](cli.md))に対応するツールを公開する
 
 | MCP ツール | 対応 CLI | 内容 |
 |-----------|----------|------|
-| `evaluate` | `-e` | 式評価 |
-| `bitwise` | `-b` | ビット演算式の評価 |
+| `evaluate_expression` | `-e` | 式評価 |
+| `evaluate_bitwise` | `-b` | ビット演算式の評価 |
+| `calculate_logarithms` | `-l` | ln / log2 / log10 を一括表示 |
 | `format_number` | `-f` | 指定形式(`dec`/`hex`/`oct`/`bin`/`all`)で表示 |
 | `convert_unit` | `-u` | 単位変換 `conv(値, 前, 後)` |
-| `logarithms` | `-l` | ln / log2 / log10 を一括表示 |
-| `char_size` | `-s` | 文字数・各エンコードのバイト数 |
+| `get_char_size` | `-s` | 文字数・各エンコードのバイト数 |
 | `list_types` | `-t` | 整数型・浮動小数点型の一覧 |
 | `list_encodings` | `-c` | 文字コードの一覧 |
 
-各ツールの説明文(description)がそのまま LLM 向けのヒントになる。具体例を含める。
+**ツール名の付け方は tanuki-blueprint の MCP 規約に従う**(snake_case・動詞から始める・
+プロダクト名を入れない)。クライアントが `mcp__<サーバー名>__<ツール名>` の形で名前空間を
+付けるため、ツール名の側にプロダクト名は入れない。表の並びは規約側のツール台帳と同じ順にしてある。
+
+各ツールの説明文(description)がそのまま LLM 向けのヒントになる。**何をするかに加えて
+「いつ呼ぶべきか」を書く**(具体例も含める)。`evaluate_bitwise` は `evaluate_expression` と
+評価器が同一のため、使い分けの手がかりは description にしかない。
 
 ## クライアントからの利用
 
@@ -120,7 +126,7 @@ printf '%s\n' \
 '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"t","version":"0"}}}' \
 '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
 '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
-'{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"evaluate","arguments":{"expression":"1 + 2 * 3"}}}' \
+'{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"evaluate_expression","arguments":{"expression":"1 + 2 * 3"}}}' \
 | ./target/release/calc-pgm-mcp
 ```
 
