@@ -25,8 +25,8 @@ cargo test                 # C エンジンを埋め込んだ状態で FFI ラ�
 
 | ツール | 内容 |
 |--------|------|
-| `evaluate_expression` | 数式・ビット演算式を評価 |
-| `evaluate_bitwise` | ビット演算式を評価(`evaluate_expression` と同じ評価器) |
+| `evaluate_expression` | 数式・ビット演算を含む式を演算 |
+| `evaluate_bitwise` | ビット演算を含む式を演算(`evaluate_expression` と同じ演算処理) |
 | `calculate_logarithms` | ln / log2 / log10 を一括表示 |
 | `format_number` | 指定形式(dec/hex/oct/bin/all)で表示 |
 | `convert_unit` | 単位変換(データサイズ/周波数/時間) |

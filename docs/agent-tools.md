@@ -76,8 +76,8 @@ CLI の各モード(→ [cli.md](cli.md))に対応するツールを公開する
 
 | MCP ツール | 対応 CLI | 内容 |
 |-----------|----------|------|
-| `evaluate_expression` | `-e` | 式評価 |
-| `evaluate_bitwise` | `-b` | ビット演算式の評価 |
+| `evaluate_expression` | `-e` | 式の演算 |
+| `evaluate_bitwise` | `-b` | ビット演算を含む式の演算 |
 | `calculate_logarithms` | `-l` | ln / log2 / log10 を一括表示 |
 | `format_number` | `-f` | 指定形式(`dec`/`hex`/`oct`/`bin`/`all`)で表示 |
 | `convert_unit` | `-u` | 単位変換 `conv(値, 前, 後)` |
@@ -91,7 +91,7 @@ CLI の各モード(→ [cli.md](cli.md))に対応するツールを公開する
 
 各ツールの説明文(description)がそのまま LLM 向けのヒントになる。**何をするかに加えて
 「いつ呼ぶべきか」を書く**(具体例も含める)。`evaluate_bitwise` は `evaluate_expression` と
-評価器が同一のため、使い分けの手がかりは description にしかない。
+演算処理が同一のため、使い分けの手がかりは description にしかない。
 
 ## クライアントからの利用
 
